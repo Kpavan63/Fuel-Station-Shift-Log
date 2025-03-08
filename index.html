@@ -440,6 +440,10 @@ body {
             <button class="btn btn-custom" onclick="generateReport()">
                 <i class="fas fa-file-excel"></i> Generate Excel Report
             </button>
+            <!-- Add this next to your Excel report button -->
+<button class="btn btn-custom" onclick="generateWordReport()">
+    <i class="fas fa-file-word"></i> Generate Word Report
+</button>
             <button class="btn btn-custom" onclick="clearData()">
                 <i class="fas fa-trash"></i> Clear Data
             </button>
@@ -1040,6 +1044,203 @@ body {
             confirmButtonColor: '#e74c3c'
         });
     }
+}
+// Add this helper function before generateWordReport
+function formatNumber(num) {
+    return Number(num).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+function generateWordReport() {
+    const date = document.getElementById('shiftDate').value;
+    const petrolData = JSON.parse(localStorage.getItem('petrolData') || '{}');
+    const dieselData = JSON.parse(localStorage.getItem('dieselData') || '{}');
+
+    // Local format function
+    const formatNumber = (num) => Number(num).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+
+    // Create HTML content with colored amounts
+    const htmlContent = `
+        <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; }
+                    table { 
+                        width: 100%; 
+                        border-collapse: collapse; 
+                        margin: 20px 0;
+                        page-break-inside: avoid;
+                    }
+                    th, td { 
+                        border: 1px solid black; 
+                        padding: 10px; 
+                        text-align: center;
+                    }
+                    th { 
+                        background-color: #2ECC71; 
+                        color: white;
+                        font-weight: bold;
+                    }
+                    .title { 
+                        font-size: 20px; 
+                        font-weight: bold; 
+                        text-align: center; 
+                        margin: 20px 0;
+                        color: #2ECC71;
+                    }
+                    .amount { 
+                        color: #FF0000; 
+                        font-weight: bold;
+                        font-size: 14px;
+                    }
+                    .total-row {
+                        background-color: #F8F9FA;
+                        font-weight: bold;
+                    }
+                    .grand-total {
+                        background-color: #E7F1FF;
+                        font-size: 16px;
+                        font-weight: bold;
+                    }
+                    .grand-total .total-amount {
+                        color: #0000FF;
+                        font-size: 18px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="title">🏢 FUEL STATION DAILY SALES REPORT</div>
+                <div style="text-align: center; margin-bottom: 20px">
+                    <strong>Date:</strong> ${date} &nbsp;&nbsp;&nbsp; 
+                    <strong>Employee:</strong> KTSWamy
+                </div>
+
+                <div class="title">⛽ PETROL SALES SUMMARY</div>
+                <table>
+                    <tr>
+                        <th>Nozzle</th>
+                        <th>Opening Reading</th>
+                        <th>Closing Reading</th>
+                        <th>Volume (L)</th>
+                        <th>Amount</th>
+                    </tr>
+                    <tr>
+                        <td>Nozzle 1</td>
+                        <td>${petrolData.nozzle1?.start || 0}</td>
+                        <td>${petrolData.nozzle1?.end || 0}</td>
+                        <td>${(petrolData.nozzle1?.end || 0) - (petrolData.nozzle1?.start || 0)}</td>
+                        <td class="amount">₹ ${formatNumber(petrolData.nozzle1?.amount || 0)}</td>
+                    </tr>
+                    <tr>
+                        <td>Nozzle 2</td>
+                        <td>${petrolData.nozzle2?.start || 0}</td>
+                        <td>${petrolData.nozzle2?.end || 0}</td>
+                        <td>${(petrolData.nozzle2?.end || 0) - (petrolData.nozzle2?.start || 0)}</td>
+                        <td class="amount">₹ ${formatNumber(petrolData.nozzle2?.amount || 0)}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="3"><strong>Total Petrol</strong></td>
+                        <td>${formatNumber(petrolData.totalSold || 0)}</td>
+                        <td class="amount">₹ ${formatNumber(petrolData.totalAmount || 0)}</td>
+                    </tr>
+                </table>
+
+                <div class="title">🚛 DIESEL SALES SUMMARY</div>
+                <table>
+                    <tr>
+                        <th>Nozzle</th>
+                        <th>Opening Reading</th>
+                        <th>Closing Reading</th>
+                        <th>Volume (L)</th>
+                        <th>Amount</th>
+                    </tr>
+                    <tr>
+                        <td>Nozzle 1</td>
+                        <td>${dieselData.nozzle1?.start || 0}</td>
+                        <td>${dieselData.nozzle1?.end || 0}</td>
+                        <td>${(dieselData.nozzle1?.end || 0) - (dieselData.nozzle1?.start || 0)}</td>
+                        <td class="amount">₹ ${formatNumber(dieselData.nozzle1?.amount || 0)}</td>
+                    </tr>
+                    <tr>
+                        <td>Nozzle 2</td>
+                        <td>${dieselData.nozzle2?.start || 0}</td>
+                        <td>${dieselData.nozzle2?.end || 0}</td>
+                        <td>${(dieselData.nozzle2?.end || 0) - (dieselData.nozzle2?.start || 0)}</td>
+                        <td class="amount">₹ ${formatNumber(dieselData.nozzle2?.amount || 0)}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="3"><strong>Total Diesel</strong></td>
+                        <td>${formatNumber(dieselData.totalSold || 0)}</td>
+                        <td class="amount">₹ ${formatNumber(dieselData.totalAmount || 0)}</td>
+                    </tr>
+                </table>
+
+                <div class="title">📊 FINAL SUMMARY</div>
+                <table>
+                    <tr>
+                        <th>Category</th>
+                        <th>Volume (L)</th>
+                        <th>Rate/L</th>
+                        <th>Amount</th>
+                    </tr>
+                    <tr>
+                        <td>Total Petrol</td>
+                        <td>${formatNumber(petrolData.totalSold || 0)}</td>
+                        <td>₹ ${petrolData.price || 0}</td>
+                        <td class="amount">₹ ${formatNumber(petrolData.totalAmount || 0)}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Diesel</td>
+                        <td>${formatNumber(dieselData.totalSold || 0)}</td>
+                        <td>₹ ${dieselData.price || 0}</td>
+                        <td class="amount">₹ ${formatNumber(dieselData.totalAmount || 0)}</td>
+                    </tr>
+                    <tr class="grand-total">
+                        <td colspan="3"><strong>💰 GRAND TOTAL</strong></td>
+                        <td class="total-amount">₹ ${formatNumber((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0))}</td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 30px; text-align: right;">
+                    <p><strong>Generated On:</strong> ${new Date().toLocaleString()}</p>
+                    <p style="margin-top: 50px">
+                        <strong>Signature: </strong>_______________________<br>
+                        <span style="font-size: 12px">KTSWamy</span>
+                    </p>
+                </div>
+            </body>
+        </html>
+    `;
+
+    // Convert to Blob and trigger download
+    const blob = new Blob([htmlContent], { type: 'application/msword' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `FuelStation_Report_${date.replace(/-/g,'')}_KTSWamy.doc`;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Show success message
+    Swal.fire({
+        icon: 'success',
+        title: 'Word Report Generated!',
+        html: `
+            <div class="report-details">
+                <p><i class="fas fa-file-word text-primary"></i> <strong>${link.download}</strong></p>
+                <p><i class="fas fa-user"></i> Employee: <strong>KTSWamy</strong></p>
+                <p><i class="fas fa-calendar"></i> Date: <strong>${date}</strong></p>
+            </div>
+        `,
+        confirmButtonColor: '#2ecc71'
+    });
 }
         
         // Helper Functions
