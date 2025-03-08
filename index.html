@@ -792,29 +792,83 @@ body {
             font: { bold: true, sz: 16, color: { rgb: "FFFFFF" } },
             fill: { fgColor: { rgb: "2ECC71" } },
             alignment: { horizontal: "center", vertical: "center", wrapText: true },
-            border: { top: { style: "medium" }, bottom: { style: "medium" }, 
-                     left: { style: "medium" }, right: { style: "medium" } }
+            border: {
+                top: { style: "medium", color: { rgb: "000000" } },
+                bottom: { style: "medium", color: { rgb: "000000" } },
+                left: { style: "medium", color: { rgb: "000000" } },
+                right: { style: "medium", color: { rgb: "000000" } }
+            }
         },
         header: {
             font: { bold: true, sz: 12, color: { rgb: "000000" } },
             fill: { fgColor: { rgb: "E8F5E9" } },
             alignment: { horizontal: "center", vertical: "center" },
-            border: { top: { style: "thin" }, bottom: { style: "thin" }, 
-                     left: { style: "thin" }, right: { style: "thin" } }
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
         },
         cell: {
             alignment: { horizontal: "center", vertical: "center" },
-            border: { top: { style: "thin" }, bottom: { style: "thin" }, 
-                     left: { style: "thin" }, right: { style: "thin" } }
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
         },
-        total: {
-            font: { bold: true, sz: 12 },
-            fill: { fgColor: { rgb: "F5F5F5" } },
+        amount: {
+            font: { bold: true, sz: 12, color: { rgb: "006400" } }, // Dark green
             alignment: { horizontal: "right", vertical: "center" },
-            border: { top: { style: "double" }, bottom: { style: "double" }, 
-                     left: { style: "thin" }, right: { style: "thin" } }
+            border: {
+                top: { style: "thin", color: { rgb: "000000" } },
+                bottom: { style: "thin", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        },
+        petrolTotal: {
+            font: { bold: true, sz: 12, color: { rgb: "FF0000" } }, // Red
+            fill: { fgColor: { rgb: "FFE6E6" } }, // Light red
+            alignment: { horizontal: "right", vertical: "center" },
+            border: {
+                top: { style: "double", color: { rgb: "000000" } },
+                bottom: { style: "double", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        },
+        dieselTotal: {
+            font: { bold: true, sz: 12, color: { rgb: "0000FF" } }, // Blue
+            fill: { fgColor: { rgb: "E6E6FF" } }, // Light blue
+            alignment: { horizontal: "right", vertical: "center" },
+            border: {
+                top: { style: "double", color: { rgb: "000000" } },
+                bottom: { style: "double", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
+        },
+        grandTotal: {
+            font: { bold: true, sz: 14, color: { rgb: "800080" } }, // Purple
+            fill: { fgColor: { rgb: "F0E6FF" } }, // Light purple
+            alignment: { horizontal: "right", vertical: "center" },
+            border: {
+                top: { style: "double", color: { rgb: "000000" } },
+                bottom: { style: "double", color: { rgb: "000000" } },
+                left: { style: "thin", color: { rgb: "000000" } },
+                right: { style: "thin", color: { rgb: "000000" } }
+            }
         }
     };
+
+    // Calculate volumes
+    const petrolVolume = ((petrolData.nozzle1?.end || 0) - (petrolData.nozzle1?.start || 0)) + 
+                        ((petrolData.nozzle2?.end || 0) - (petrolData.nozzle2?.start || 0));
+    const dieselVolume = ((dieselData.nozzle1?.end || 0) - (dieselData.nozzle1?.start || 0)) + 
+                        ((dieselData.nozzle2?.end || 0) - (dieselData.nozzle2?.start || 0));
 
     // Format numbers
     const formatNumber = (num) => Number(num).toLocaleString('en-IN', {
@@ -822,79 +876,101 @@ body {
         maximumFractionDigits: 2
     });
 
-    // Calculate totals
-    const petrolVolume = ((petrolData.nozzle1?.end || 0) - (petrolData.nozzle1?.start || 0)) + 
-                        ((petrolData.nozzle2?.end || 0) - (petrolData.nozzle2?.start || 0));
-    const dieselVolume = ((dieselData.nozzle1?.end || 0) - (dieselData.nozzle1?.start || 0)) + 
-                        ((dieselData.nozzle2?.end || 0) - (dieselData.nozzle2?.start || 0));
-
     const reportData = [
+        // Title and Date
         [{ v: 'FUEL STATION DAILY SALES REPORT', t: 's', s: styles.title }, '', '', '', ''],
         [{ v: 'Date:', t: 's', s: styles.header }, { v: date, t: 's', s: styles.cell }, '', 
          { v: 'Employee:', t: 's', s: styles.header }, { v: 'KTSWamy', t: 's', s: styles.cell }],
         ['', '', '', '', ''],
+
+        // Petrol Section
         [{ v: 'PETROL SALES SUMMARY', t: 's', s: styles.header }, '', '', '', ''],
         [{ v: 'Nozzle', t: 's', s: styles.header }, 
          { v: 'Opening Reading', t: 's', s: styles.header },
          { v: 'Closing Reading', t: 's', s: styles.header },
          { v: 'Volume (L)', t: 's', s: styles.header },
          { v: 'Amount (₹)', t: 's', s: styles.header }],
+        
+        // Petrol Nozzle 1
         [{ v: 'Nozzle 1', t: 's', s: styles.cell },
          { v: petrolData.nozzle1?.start || 0, t: 'n', s: styles.cell },
          { v: petrolData.nozzle1?.end || 0, t: 'n', s: styles.cell },
          { v: (petrolData.nozzle1?.end || 0) - (petrolData.nozzle1?.start || 0), t: 'n', s: styles.cell },
-         { v: formatNumber(petrolData.nozzle1?.amount || 0), t: 's', s: styles.cell }],
+         { v: formatNumber(petrolData.nozzle1?.amount || 0), t: 's', s: styles.amount }],
+
+        // Petrol Nozzle 2
         [{ v: 'Nozzle 2', t: 's', s: styles.cell },
          { v: petrolData.nozzle2?.start || 0, t: 'n', s: styles.cell },
          { v: petrolData.nozzle2?.end || 0, t: 'n', s: styles.cell },
          { v: (petrolData.nozzle2?.end || 0) - (petrolData.nozzle2?.start || 0), t: 'n', s: styles.cell },
-         { v: formatNumber(petrolData.nozzle2?.amount || 0), t: 's', s: styles.cell }],
-        [{ v: 'Total Petrol:', t: 's', s: styles.total }, 
-         { v: '', t: 's', s: styles.total },
-         { v: '', t: 's', s: styles.total },
-         { v: petrolVolume, t: 'n', s: styles.total },
-         { v: formatNumber(petrolData.totalAmount || 0), t: 's', s: styles.total }],
+         { v: formatNumber(petrolData.nozzle2?.amount || 0), t: 's', s: styles.amount }],
+
+        // Petrol Total
+        [{ v: 'Total Petrol:', t: 's', s: styles.petrolTotal }, 
+         { v: '', t: 's', s: styles.petrolTotal },
+         { v: '', t: 's', s: styles.petrolTotal },
+         { v: petrolVolume, t: 'n', s: styles.petrolTotal },
+         { v: formatNumber(petrolData.totalAmount || 0), t: 's', s: styles.petrolTotal }],
+        
         ['', '', '', '', ''],
+
+        // Diesel Section
         [{ v: 'DIESEL SALES SUMMARY', t: 's', s: styles.header }, '', '', '', ''],
         [{ v: 'Nozzle', t: 's', s: styles.header },
          { v: 'Opening Reading', t: 's', s: styles.header },
          { v: 'Closing Reading', t: 's', s: styles.header },
          { v: 'Volume (L)', t: 's', s: styles.header },
          { v: 'Amount (₹)', t: 's', s: styles.header }],
+
+        // Diesel Nozzle 1
         [{ v: 'Nozzle 1', t: 's', s: styles.cell },
          { v: dieselData.nozzle1?.start || 0, t: 'n', s: styles.cell },
          { v: dieselData.nozzle1?.end || 0, t: 'n', s: styles.cell },
          { v: (dieselData.nozzle1?.end || 0) - (dieselData.nozzle1?.start || 0), t: 'n', s: styles.cell },
-         { v: formatNumber(dieselData.nozzle1?.amount || 0), t: 's', s: styles.cell }],
+         { v: formatNumber(dieselData.nozzle1?.amount || 0), t: 's', s: styles.amount }],
+
+        // Diesel Nozzle 2
         [{ v: 'Nozzle 2', t: 's', s: styles.cell },
          { v: dieselData.nozzle2?.start || 0, t: 'n', s: styles.cell },
          { v: dieselData.nozzle2?.end || 0, t: 'n', s: styles.cell },
          { v: (dieselData.nozzle2?.end || 0) - (dieselData.nozzle2?.start || 0), t: 'n', s: styles.cell },
-         { v: formatNumber(dieselData.nozzle2?.amount || 0), t: 's', s: styles.cell }],
-        [{ v: 'Total Diesel:', t: 's', s: styles.total },
-         { v: '', t: 's', s: styles.total },
-         { v: '', t: 's', s: styles.total },
-         { v: dieselVolume, t: 'n', s: styles.total },
-         { v: formatNumber(dieselData.totalAmount || 0), t: 's', s: styles.total }],
+         { v: formatNumber(dieselData.nozzle2?.amount || 0), t: 's', s: styles.amount }],
+
+        // Diesel Total  
+        [{ v: 'Total Diesel:', t: 's', s: styles.dieselTotal },
+         { v: '', t: 's', s: styles.dieselTotal },
+         { v: '', t: 's', s: styles.dieselTotal },
+         { v: dieselVolume, t: 'n', s: styles.dieselTotal },
+         { v: formatNumber(dieselData.totalAmount || 0), t: 's', s: styles.dieselTotal }],
+
         ['', '', '', '', ''],
+
+        // Final Summary
         [{ v: 'FINAL SUMMARY', t: 's', s: styles.title }, '', '', '', ''],
         [{ v: 'Category', t: 's', s: styles.header },
          { v: 'Volume (L)', t: 's', s: styles.header },
          { v: 'Rate/L (₹)', t: 's', s: styles.header },
          { v: 'Amount (₹)', t: 's', s: styles.header }],
+
+        // Summary Totals
         [{ v: 'Total Petrol', t: 's', s: styles.cell },
          { v: petrolVolume, t: 'n', s: styles.cell },
          { v: petrolData.price || 0, t: 'n', s: styles.cell },
-         { v: formatNumber(petrolData.totalAmount || 0), t: 's', s: styles.cell }],
+         { v: formatNumber(petrolData.totalAmount || 0), t: 's', s: styles.petrolTotal }],
         [{ v: 'Total Diesel', t: 's', s: styles.cell },
          { v: dieselVolume, t: 'n', s: styles.cell },
          { v: dieselData.price || 0, t: 'n', s: styles.cell },
-         { v: formatNumber(dieselData.totalAmount || 0), t: 's', s: styles.cell }],
-        [{ v: 'Grand Total:', t: 's', s: styles.total },
-         { v: petrolVolume + dieselVolume, t: 'n', s: styles.total },
-         { v: '', t: 's', s: styles.total },
-         { v: formatNumber((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0)), t: 's', s: styles.total }],
+         { v: formatNumber(dieselData.totalAmount || 0), t: 's', s: styles.dieselTotal }],
+
+        // Grand Total
+        [{ v: 'Grand Total:', t: 's', s: styles.grandTotal },
+         { v: petrolVolume + dieselVolume, t: 'n', s: styles.grandTotal },
+         { v: '', t: 's', s: styles.grandTotal },
+         { v: formatNumber((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0)), t: 's', s: styles.grandTotal }],
+
         ['', '', '', '', ''],
+
+        // Footer
         [{ v: 'Generated On:', t: 's', s: styles.cell }, 
          { v: new Date().toLocaleString(), t: 's', s: styles.cell },
          { v: '', t: 's', s: styles.cell },
@@ -902,57 +978,68 @@ body {
          { v: '_____________', t: 's', s: styles.cell }]
     ];
 
-    // Create worksheet with merged cells
-    const ws = XLSX.utils.aoa_to_sheet(reportData);
+    try {
+        // Create worksheet
+        const ws = XLSX.utils.aoa_to_sheet(reportData);
 
-    // Define merged cells
-    ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },  // Title
-        { s: { r: 3, c: 0 }, e: { r: 3, c: 4 } },  // Petrol Header
-        { s: { r: 10, c: 0 }, e: { r: 10, c: 4 } }, // Diesel Header
-        { s: { r: 17, c: 0 }, e: { r: 17, c: 4 } }  // Final Summary Header
-    ];
+        // Define merged cells
+        ws['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: 4 } },  // Title
+            { s: { r: 3, c: 0 }, e: { r: 3, c: 4 } },  // Petrol Header
+            { s: { r: 10, c: 0 }, e: { r: 10, c: 4 } }, // Diesel Header
+            { s: { r: 17, c: 0 }, e: { r: 17, c: 4 } }  // Final Summary Header
+        ];
 
-    // Set column widths
-    ws['!cols'] = [
-        { wch: 20 }, // Column A
-        { wch: 18 }, // Column B
-        { wch: 18 }, // Column C
-        { wch: 15 }, // Column D
-        { wch: 18 }  // Column E
-    ];
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 20 }, // Column A
+            { wch: 18 }, // Column B
+            { wch: 18 }, // Column C
+            { wch: 15 }, // Column D
+            { wch: 18 }  // Column E
+        ];
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    wb.Props = {
-        Title: "Fuel Station Sales Report",
-        Subject: "Daily Sales Summary",
-        Author: "KTSWamy",
-        CreatedDate: new Date(),
-        Company: "KTSWamy Fuel Station"
-    };
-    
-    XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        wb.Props = {
+            Title: "Fuel Station Sales Report",
+            Subject: "Daily Sales Summary",
+            Author: "KTSWamy",
+            CreatedDate: new Date(),
+            Company: "KTSWamy Fuel Station"
+        };
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
 
-    // Save file with formatted name
-    const formattedDate = date.replace(/-/g, '');
-    const fileName = `FuelStation_Report_${formattedDate}_KTSWamy.xlsx`;
-    XLSX.writeFile(wb, fileName);
+        // Generate filename and save
+        const formattedDate = date.replace(/-/g, '');
+        const fileName = `FuelStation_Report_${formattedDate}_KTSWamy.xlsx`;
+        XLSX.writeFile(wb, fileName);
 
-    // Show success notification
-    Swal.fire({
-        icon: 'success',
-        title: 'Report Generated Successfully!',
-        html: `
-            <div class="report-details">
-                <p><i class="fas fa-file-excel text-success"></i> <strong>${fileName}</strong></p>
-                <p><i class="fas fa-user"></i> Employee: <strong>KTSWamy</strong></p>
-                <p><i class="fas fa-calendar"></i> Date: <strong>${date}</strong></p>
-                <p><i class="fas fa-clock"></i> Time: <strong>${new Date().toLocaleTimeString()}</strong></p>
-            </div>
-        `,
-        confirmButtonColor: '#2ecc71'
-    });
+        // Show success message
+        Swal.fire({
+            icon: 'success',
+            title: 'Report Generated Successfully!',
+            html: `
+                <div class="report-details">
+                    <p><i class="fas fa-file-excel text-success"></i> <strong>${fileName}</strong></p>
+                    <p><i class="fas fa-user"></i> Employee: <strong>KTSWamy</strong></p>
+                    <p><i class="fas fa-calendar"></i> Date: <strong>${date}</strong></p>
+                    <p><i class="fas fa-clock"></i> Time: <strong>${new Date().toLocaleTimeString()}</strong></p>
+                </div>
+            `,
+            confirmButtonColor: '#2ecc71'
+        });
+    } catch (error) {
+        console.error('Error generating report:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to generate report. Please try again.',
+            confirmButtonColor: '#e74c3c'
+        });
+    }
 }
         
         // Helper Functions
