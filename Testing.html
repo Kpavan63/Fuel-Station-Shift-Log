@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fuel Station Analytics Dashboard</title>
+    
+    <!-- CSS Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/animate.css@4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/numeral@2.0.6/min/numeral.min.js"></script>
+
+    <style>
+        :root {
+    --dark-bg: #1a1a1a;
+    --card-bg: #2d2d2d;
+    --text-color: #ffffff;
+    --primary: #2ecc71;
+    --secondary: #3498db;
+    --danger: #e74c3c;
+    --warning: #f1c40f;
+}
+
+body {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #000000 100%);
+    color: var(--text-color);
+    min-height: 100vh;
+    padding: 15px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.stat-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--primary);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.stat-card:hover::before {
+    opacity: 1;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(46, 204, 113, 0.2);
+}
+
+.stat-value {
+    font-size: clamp(18px, 4vw, 24px);
+    font-weight: bold;
+    color: var(--primary);
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    height: 100%;
+    position: relative;
+}
+
+.chart-container h5 {
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chart-container h5 i {
+    color: var(--primary);
+}
+
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+}
+
+.trend-indicator {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+}
+
+.trend-up {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--primary);
+}
+
+.trend-down {
+    background: rgba(231, 76, 60, 0.2);
+    color: var(--danger);
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        min-height: 350px;
+    }
+    
+    .stat-card h6 {
+        font-size: 14px;
+    }
+    
+    .filters select, 
+    .filters input {
+        margin-bottom: 10px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Filter Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="stat-card">
+                    <div class="d-flex flex-wrap align-items-end gap-3">
+                        <div class="flex-grow-1">
+                            <label class="text-white mb-2">Select Period</label>
+                            <input type="month" id="monthFilter" class="form-control bg-dark text-white">
+                        </div>
+                        <div>
+                            <button onclick="loadDashboardData()" class="btn btn-success">
+                                <i class="fas fa-sync"></i> 
+                                <span class="d-none d-sm-inline">Update</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h6><i class="fas fa-gas-pump"></i> Petrol Price</h6>
+                    <div class="stat-value" id="petrolPrice">₹0.00</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h6><i class="fas fa-truck"></i> Diesel Price</h6>
+                    <div class="stat-value" id="dieselPrice">₹0.00</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h6><i class="fas fa-chart-line"></i> Total Sales</h6>
+                    <div class="stat-value" id="totalSales">₹0.00</div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="stat-card">
+                    <h6><i class="fas fa-tachometer-alt"></i> Total Volume</h6>
+                    <div class="stat-value" id="totalVolume">0L</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="row">
+            <div class="col-12 col-lg-8 mb-4">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-line"></i> Sales Comparison</h5>
+                    <div id="salesComparisonChart"></div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-4 mb-4">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-pie"></i> Volume Distribution</h5>
+                    <div id="volumeDistributionChart"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-md-6 mb-4">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-bar"></i> Nozzle Performance</h5>
+                    <div id="nozzlePerformanceChart"></div>
+                </div>
+            </div>
+            <div class="col-12 col-md-6 mb-4">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-area"></i> Daily Trends</h5>
+                    <div id="dailyTrendsChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="loadingIndicator" class="loading d-none">
+        <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+let charts = {};
+const chartColors = {
+    primary: '#2ecc71',
+    secondary: '#3498db',
+    danger: '#e74c3c',
+    warning: '#f1c40f'
+};
+
+// Initialize dashboard
+$(document).ready(() => {
+    initializeCharts();
+    setupEventListeners();
+    loadDashboardData();
+});
+
+function setupEventListeners() {
+    $('#monthFilter').on('change', _.debounce(loadDashboardData, 500));
+}
+
+function initializeCharts() {
+    // Sales Comparison Chart
+    charts.salesComparison = new ApexCharts(document.querySelector("#salesComparisonChart"), {
+        series: [{
+            name: 'Petrol Sales',
+            data: []
+        }, {
+            name: 'Diesel Sales',
+            data: []
+        }],
+        chart: {
+            type: 'line',
+            height: 350,
+            background: 'transparent',
+            toolbar: { show: false }
+        },
+        theme: { mode: 'dark' },
+        colors: [chartColors.primary, chartColors.secondary],
+        xaxis: { type: 'datetime' },
+        yaxis: {
+            labels: {
+                formatter: val => formatCurrency(val)
+            }
+        }
+    });
+
+    // Volume Distribution Chart
+    charts.volumeDistribution = new ApexCharts(document.querySelector("#volumeDistributionChart"), {
+        series: [0, 0],
+        chart: {
+            type: 'donut',
+            height: 350,
+            background: 'transparent'
+        },
+        theme: { mode: 'dark' },
+        labels: ['Petrol', 'Diesel'],
+        colors: [chartColors.primary, chartColors.secondary]
+    });
+
+    // Nozzle Performance Chart
+    charts.nozzlePerformance = new ApexCharts(document.querySelector("#nozzlePerformanceChart"), {
+        series: [{
+            name: 'Volume (L)',
+            data: []
+        }],
+        chart: {
+            type: 'bar',
+            height: 350,
+            background: 'transparent'
+        },
+        theme: { mode: 'dark' },
+        colors: [chartColors.primary],
+        xaxis: {
+            categories: ['Petrol N1', 'Petrol N2', 'Diesel N1', 'Diesel N2']
+        }
+    });
+
+    // Daily Trends Chart
+    charts.dailyTrends = new ApexCharts(document.querySelector("#dailyTrendsChart"), {
+        series: [{
+            name: 'Volume',
+            type: 'column',
+            data: []
+        }, {
+            name: 'Revenue',
+            type: 'line',
+            data: []
+        }],
+        chart: {
+            height: 350,
+            type: 'line',
+            background: 'transparent'
+        },
+        theme: { mode: 'dark' },
+        colors: [chartColors.secondary, chartColors.primary]
+    });
+    // Update Nozzle Performance Chart configuration
+    charts.nozzlePerformance.updateOptions({
+        plotOptions: {
+            bar: {
+                horizontal: false,
+                columnWidth: '55%',
+                borderRadius: 5
+            }
+        },
+        dataLabels: {
+            enabled: true,
+            formatter: function(val) {
+                return formatCurrency(val);
+            }
+        },
+        yaxis: {
+            labels: {
+                formatter: function(val) {
+                    return formatCurrency(val);
+                }
+            }
+        }
+    });
+
+    // Update Volume Distribution Chart configuration
+    charts.volumeDistribution.updateOptions({
+        plotOptions: {
+            pie: {
+                donut: {
+                    labels: {
+                        show: true,
+                        total: {
+                            show: true,
+                            label: 'Total Volume',
+                            formatter: function(w) {
+                                const total = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+                                return total.toFixed(2) + ' L';
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return value.toFixed(2) + ' L';
+                }
+            }
+        }
+    });
+
+
+    // Render all charts
+    Object.values(charts).forEach(chart => chart.render());
+}
+
+function loadDashboardData() {
+    showLoading();
+    
+    fetch('https://sheetdb.io/api/v1/qzyontaibfny0')
+        .then(response => response.json())
+        .then(data => {
+            console.log('Raw data:', data); // Debug log
+            const month = $('#monthFilter').val();
+            console.log('Selected month:', month); // Debug log
+            const filteredData = filterDataByMonth(data, month);
+            console.log('Filtered data:', filteredData); // Debug log
+            if (filteredData.length === 0) {
+                throw new Error('No data available for selected period');
+            }
+            updateDashboard(filteredData);
+            hideLoading();
+            showSuccessToast('Dashboard updated successfully!');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            hideLoading();
+            showErrorAlert('Failed to load data', error.message);
+        });
+}
+
+function updateSalesComparisonChart(data) {
+    const salesData = data.reduce((acc, row) => {
+        const date = new Date(row.date).getTime();
+        acc.petrol.push({
+            x: date,
+            y: parseCurrency(row.total_petrol_amount)
+        });
+        acc.diesel.push({
+            x: date,
+            y: parseCurrency(row.total_diesel_amount)
+        });
+        return acc;
+    }, { petrol: [], diesel: [] });
+
+    charts.salesComparison.updateSeries([
+        {
+            name: 'Petrol Sales',
+            data: salesData.petrol.sort((a, b) => a.x - b.x)
+        },
+        {
+            name: 'Diesel Sales',
+            data: salesData.diesel.sort((a, b) => a.x - b.x)
+        }
+    ]);
+}
+
+function updateVolumeDistributionChart(data) {
+    const volumes = data.reduce((acc, row) => {
+        acc.petrol += parseFloat(row.petrol_volume) || 0;
+        acc.diesel += parseFloat(row.diesel_volume) || 0;
+        return acc;
+    }, { petrol: 0, diesel: 0 });
+
+    charts.volumeDistribution.updateSeries([
+        volumes.petrol,
+        volumes.diesel
+    ]);
+}
+
+function updateNozzlePerformanceChart(data) {
+    const nozzleData = data.reduce((acc, row) => {
+        acc[0] += parseCurrency(row.petrol_nozzle1_amount);
+        acc[1] += parseCurrency(row.petrol_nozzle2_amount);
+        acc[2] += parseCurrency(row.diesel_nozzle1_amount);
+        acc[3] += parseCurrency(row.diesel_nozzle2_amount);
+        return acc;
+    }, [0, 0, 0, 0]);
+
+    charts.nozzlePerformance.updateSeries([{
+        name: 'Sales Amount',
+        data: nozzleData
+    }]);
+}
+
+function updateDailyTrendsChart(data) {
+    const dailyData = data.reduce((acc, row) => {
+        const date = new Date(row.date).getTime();
+        acc.volume.push({
+            x: date,
+            y: parseFloat(row.petrol_volume) + parseFloat(row.diesel_volume)
+        });
+        acc.revenue.push({
+            x: date,
+            y: parseCurrency(row.total_amount)
+        });
+        return acc;
+    }, { volume: [], revenue: [] });
+
+    charts.dailyTrends.updateSeries([
+        {
+            name: 'Volume (L)',
+            type: 'column',
+            data: dailyData.volume.sort((a, b) => a.x - b.x)
+        },
+        {
+            name: 'Revenue (₹)',
+            type: 'line',
+            data: dailyData.revenue.sort((a, b) => a.x - b.x)
+        }
+    ]);
+}
+
+function updateDashboard(data) {
+    if (data.length === 0) {
+        showErrorAlert('No Data', 'No data available for selected period');
+        return;
+    }
+
+    updateStatistics(data);
+    updateCharts(data);
+}
+
+function updateStatistics(data) {
+    const latest = data[data.length - 1];
+    const stats = calculateStats(data);
+    
+    updateStatCard('petrolPrice', latest.petrol_price);
+    updateStatCard('dieselPrice', latest.diesel_price);
+    updateStatCard('totalSales', stats.totalSales);
+    updateStatCard('totalVolume', stats.totalVolume, 'L');
+}
+
+function calculateStats(data) {
+    return {
+        totalSales: data.reduce((sum, row) => sum + parseCurrency(row.total_amount), 0),
+        totalVolume: data.reduce((sum, row) => sum + (parseFloat(row.petrol_volume) + parseFloat(row.diesel_volume)), 0)
+    };
+}
+
+function updateCharts(data) {
+    updateSalesComparisonChart(data);
+    updateVolumeDistributionChart(data);
+    updateNozzlePerformanceChart(data);
+    updateDailyTrendsChart(data);
+}
+
+// Helper functions
+function showLoading() {
+    Swal.fire({
+        title: 'Loading...',
+        html: 'Fetching latest data',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+}
+
+function hideLoading() {
+    Swal.close();
+}
+
+function showSuccessToast(message) {
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+    });
+
+    Toast.fire({
+        icon: 'success',
+        title: message
+    });
+}
+
+function showErrorAlert(title, message) {
+    Swal.fire({
+        icon: 'error',
+        title: title,
+        text: message
+    });
+}
+
+function formatCurrency(amount) {
+    return numeral(amount).format('₹0,0.00');
+}
+
+function parseCurrency(value) {
+    return parseFloat(value?.replace(/[₹,]/g, '') || 0);
+}
+
+function filterDataByMonth(data, month) {
+    return data.filter(row => moment(row.date).format('YYYY-MM') === month);
+}
+
+function updateStatCard(id, value, suffix = '') {
+    $(`#${id}`).text(formatCurrency(value) + suffix);
+}
+    </script>
+</body>
+</html>
