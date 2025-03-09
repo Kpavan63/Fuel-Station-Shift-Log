@@ -440,6 +440,24 @@ body {
     color: #2ecc71;
     font-weight: bold;
 }
+.btn-primary {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(46, 204, 113, 0.3);
+    background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+}
+
+.btn-primary i {
+    font-size: 1.1em;
+}
     </style>
 </head>
 <body>
@@ -614,6 +632,12 @@ body {
             <button class="btn btn-custom" onclick="clearData()">
                 <i class="fas fa-trash"></i> Clear Data
             </button>
+            <div class="mb-3">
+                <a href="Testing.html" class="btn btn-primary">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="ms-2">View Dashboard</span>
+                </a>
+            </div>
         </div>
     </div>
 
