@@ -49,7 +49,92 @@ body {
     min-height: 100vh;
     transition: background-color var(--transition-speed) ease;
 }
+/* Add to your existing CSS */
+.navbar {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #000000 100%);
+    padding: 15px 0;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
 
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--primary) !important;
+}
+
+.navbar-brand i {
+    margin-right: 8px;
+}
+
+.nav-link {
+    color: var(--text-color) !important;
+    padding: 8px 16px !important;
+    margin: 0 5px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background: rgba(46, 204, 113, 0.1);
+    transform: translateY(-2px);
+}
+
+.nav-link i {
+    margin-right: 8px;
+}
+
+.dropdown-menu {
+    background: var(--card-bg);
+    border: 1px solid var(--primary);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    padding: 8px;
+}
+
+.dropdown-item {
+    color: var(--text-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateX(5px);
+}
+
+.dropdown-item i {
+    margin-right: 8px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Adjust body padding for fixed navbar */
+body {
+    padding-top: 80px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 991px) {
+    .navbar-collapse {
+        background: var(--card-bg);
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
+    .nav-link {
+        padding: 12px !important;
+        margin: 5px 0;
+    }
+
+    .dropdown-menu {
+        background: rgba(0, 0, 0, 0.2);
+        border: none;
+        box-shadow: none;
+    }
+}
 .container {
     max-width: 1200px;
     margin: auto;
@@ -458,9 +543,82 @@ body {
 .btn-primary i {
     font-size: 1.1em;
 }
+.footer {
+    background: linear-gradient(135deg, var(--dark-bg) 0%, #000000 100%);
+    padding: 40px 0 20px;
+    border-top: 4px solid var(--green-primary);
+    margin-top: 50px;
+}
+
+.footer-section {
+    color: var(--text-color);
+    padding: 20px;
+    background: rgba(46, 204, 113, 0.1);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.footer-section:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.2);
+}
+.footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-bottom p {
+    margin: 5px 0;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+}
     </style>
 </head>
 <body>
+    <!-- Add this right after the opening <body> tag in index.html -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <i class="fas fa-gas-pump" style="color: #daa520;"></i> 
+            KT Fuel Station
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-file-export"></i> Generate Report
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark">
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="generateReport()">
+                                <i class="fas fa-file-excel"></i> Excel Report
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="generateWordReport()">
+                                <i class="fas fa-file-word"></i> Word Report
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.html">
+                        <i class="fas fa-chart-line"></i> Dashboard
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
     <div class="container animate__animated animate__fadeIn">
         <h2 class="text-center mb-4">
             <i class="fas fa-gas-pump text-success"></i> 
@@ -619,27 +777,23 @@ body {
 
         <!-- Action Buttons -->
         <div class="action-buttons mt-4 text-center">
-            <button class="btn btn-custom" onclick="generateReport()">
-                <i class="fas fa-file-excel"></i> Generate Excel Report
-            </button>
-            <!-- Add this next to your Excel report button -->
-            <button class="btn btn-custom" onclick="generateWordReport()">
-                <i class="fas fa-file-word"></i> Generate Word Report
-            </button>
             <button class="btn btn-custom" onclick="saveToSheet()">
                 <i class="fas fa-cloud-upload-alt"></i> Save to Sheet
             </button>
             <button class="btn btn-custom" onclick="clearData()">
                 <i class="fas fa-trash"></i> Clear Data
             </button>
-            <div class="mb-3">
-                <a href="Testing.html" class="btn btn-primary">
-                    <i class="fas fa-chart-line"></i>
-                    <span class="ms-2">View Dashboard</span>
-                </a>
-            </div>
         </div>
     </div>
+    <!-- Add this before the closing </body> tag -->
+<footer class="footer mt-5">
+    <div class="container-fluid">
+        <div class="footer-bottom">
+            <p>&copy; 2025 KTSWamy Fuel Station. All rights reserved.</p>
+            <p>Version 1.0.0 | Last Updated: March 2025</p>
+        </div>
+    </div>
+</footer>
 
     <!-- Load JavaScript -->
     <script>// Initialize global variables
