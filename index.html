@@ -276,6 +276,170 @@ body {
         page-break-inside: avoid;
     }
 }
+.progress-container {
+    padding: 25px;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 10px;
+    background: rgba(46, 204, 113, 0.1);
+    border-radius: 10px;
+}
+
+.progress-info {
+    text-align: left;
+}
+
+.progress-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+.progress-info i {
+    width: 20px;
+    color: #2ecc71;
+    margin-right: 8px;
+}
+
+.progress-status {
+    position: relative;
+    margin: 30px 0;
+}
+
+.progress {
+    height: 10px;
+    background: #f0f0f0;
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 20px;
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    transition: width 0.3s ease;
+    position: relative;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.2) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255, 255, 255, 0.2) 50%,
+        rgba(255, 255, 255, 0.2) 75%,
+        transparent 75%
+    );
+    background-size: 20px 20px;
+    animation: progressStripes 1s linear infinite;
+}
+
+.progress-percentage {
+    position: absolute;
+    right: 0;
+    top: -25px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #2ecc71;
+}
+
+.progress-label {
+    position: absolute;
+    left: 0;
+    top: -25px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+
+@keyframes progressStripes {
+    from { background-position: 0 0; }
+    to { background-position: 20px 0; }
+}
+
+.status-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.status-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+}
+
+.status-step::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 55%;
+    right: -45%;
+    height: 2px;
+    background: #ddd;
+    z-index: 1;
+}
+
+.status-step:last-child::after {
+    display: none;
+}
+
+.step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.step-icon i {
+    color: #999;
+    transition: all 0.3s ease;
+}
+
+.step-label {
+    font-size: 12px;
+    color: #999;
+    transition: all 0.3s ease;
+}
+
+.status-step.active .step-icon {
+    border-color: #2ecc71;
+    background: #2ecc71;
+}
+
+.status-step.active .step-icon i {
+    color: #fff;
+}
+
+.status-step.active .step-label {
+    color: #2ecc71;
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -441,9 +605,12 @@ body {
                 <i class="fas fa-file-excel"></i> Generate Excel Report
             </button>
             <!-- Add this next to your Excel report button -->
-<button class="btn btn-custom" onclick="generateWordReport()">
-    <i class="fas fa-file-word"></i> Generate Word Report
-</button>
+            <button class="btn btn-custom" onclick="generateWordReport()">
+                <i class="fas fa-file-word"></i> Generate Word Report
+            </button>
+            <button class="btn btn-custom" onclick="saveToSheet()">
+                <i class="fas fa-cloud-upload-alt"></i> Save to Sheet
+            </button>
             <button class="btn btn-custom" onclick="clearData()">
                 <i class="fas fa-trash"></i> Clear Data
             </button>
@@ -1044,6 +1211,171 @@ body {
             confirmButtonColor: '#e74c3c'
         });
     }
+}
+// Add this function after your existing functions
+function saveToSheet() {
+    const date = document.getElementById('shiftDate').value;
+    const currentTime = new Date().toLocaleTimeString('en-IN');
+    const petrolData = JSON.parse(localStorage.getItem('petrolData') || '{}');
+    const dieselData = JSON.parse(localStorage.getItem('dieselData') || '{}');
+    const userName = 'KTSWamy';
+    // Format currency
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 2
+        }).format(amount);
+    };
+
+    // Prepare data for sheet
+    // In the saveToSheet function, replace the data object with this:
+const data = {
+    data: [{
+        date: date,
+        time: currentTime,
+        username: userName, // Changed from user_name to userName
+        petrol_nozzle1_amount: formatCurrency(petrolData.nozzle1?.amount || 0),
+        petrol_nozzle2_amount: formatCurrency(petrolData.nozzle2?.amount || 0),
+        diesel_nozzle1_amount: formatCurrency(dieselData.nozzle1?.amount || 0),
+        diesel_nozzle2_amount: formatCurrency(dieselData.nozzle2?.amount || 0),
+        total_amount: formatCurrency((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0))
+    }]
+};
+
+    // Show progress bar with updated messages
+    let timerInterval;
+    let progress = 0;
+
+    Swal.fire({
+        title: 'Saving to Sheet',
+        html: `
+            <div class="progress-container">
+                <div class="progress-header">
+                    <div class="progress-info">
+                        <p><i class="fas fa-user"></i> <strong>KTSWamy</strong></p>
+                        <p><i class="fas fa-calendar"></i> <strong>${date}</strong></p>
+                        <p><i class="fas fa-clock"></i> <strong>${currentTime}</strong></p>
+                    </div>
+                </div>
+                
+                <div class="progress-status">
+                    <div class="progress-label">
+                        <span class="status-text">Initializing...</span>
+                    </div>
+                    <div class="progress-percentage">0%</div>
+                    <div class="progress">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="status-steps">
+                    <div class="status-step active">
+                        <div class="step-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="step-label">Preparing</div>
+                    </div>
+                    <div class="status-step">
+                        <div class="step-icon">
+                            <i class="fas fa-server"></i>
+                        </div>
+                        <div class="step-label">Connecting</div>
+                    </div>
+                    <div class="status-step">
+                        <div class="step-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="step-label">Uploading</div>
+                    </div>
+                    <div class="status-step">
+                        <div class="step-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div class="step-label">Complete</div>
+                    </div>
+                </div>
+            </div>
+        `,
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            const progressText = Swal.getHtmlContainer().querySelector('.progress-percentage');
+            const progressBar = Swal.getHtmlContainer().querySelector('.progress-bar');
+            const statusText = Swal.getHtmlContainer().querySelector('.status-text');
+            const steps = Swal.getHtmlContainer().querySelectorAll('.status-step');
+            timerInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += 10;
+                    progressBar.style.width = progress + '%';
+                    progressBar.textContent = progress + '%';
+
+                    // Update steps
+                    if (progress < 30) {
+                        statusText.textContent = 'Preparing data...';
+                        steps[0].classList.add('active');
+                    } else if (progress < 60) {
+                        statusText.textContent = 'Connecting to server...';
+                        steps[1].classList.add('active');
+                    } else if (progress < 90) {
+                        statusText.textContent = 'Uploading data...';
+                        steps[2].classList.add('active');
+                    }
+                }
+            }, 200);
+
+            // Make API call to SheetDB
+            fetch('https://sheetdb.io/api/v1/qzyontaibfny0', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(timerInterval);
+                progress = 100;
+                
+                const progressBar = Swal.getHtmlContainer().querySelector('.progress-bar');
+                const statusText = Swal.getHtmlContainer().querySelector('.status-text');
+                
+                progressBar.style.width = '100%';
+                progressBar.textContent = '100%';
+                statusText.textContent = 'Data saved successfully!';
+
+                setTimeout(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Saved Successfully!',
+                        html: `
+                            <div class="save-details">
+                                <p><i class="fas fa-check-circle text-success"></i> Data has been saved to sheet</p>
+                                <p><i class="fas fa-user"></i> User: <strong>KTSWamy</strong></p>
+                                <p><i class="fas fa-calendar"></i> Date: <strong>${date}</strong></p>
+                                <p><i class="fas fa-clock"></i> Time: <strong>${currentTime}</strong></p>
+                                <p><i class="fas fa-rupee-sign"></i> Total: <strong>${formatCurrency((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0))}</strong></p>
+                            </div>
+                        `,
+                        confirmButtonColor: '#2ecc71'
+                    });
+                }, 500);
+            })
+            .catch(error => {
+                clearInterval(timerInterval);
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to save data. Please try again.',
+                    confirmButtonColor: '#e74c3c'
+                });
+            });
+        },
+        willClose: () => {
+            clearInterval(timerInterval);
+        }
+    });
 }
 // Add this helper function before generateWordReport
 function formatNumber(num) {
