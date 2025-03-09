@@ -1402,10 +1402,11 @@ function formatDateTime(date, time) {
 }
 // Add this function after your existing functions
 function saveToSheet() {
-    // Get date and time
-    const userName = 'KTSWamy';
-    const date = document.getElementById('shiftDate').value;
+   // Get date and time
+   const userName = 'KTSWamy';
+    const rawDate = document.getElementById('shiftDate').value;
     const currentTime = new Date().toLocaleTimeString('en-IN');
+    const formattedDate = moment(rawDate).format('DD/MM/YYYY');
     
     // Get stored data
     const petrolData = JSON.parse(localStorage.getItem('petrolData') || '{}');
@@ -1415,7 +1416,7 @@ function saveToSheet() {
     const petrolPrice = parseFloat(localStorage.getItem('petrolPrice')) || 0;
     const dieselPrice = parseFloat(localStorage.getItem('dieselPrice')) || 0;
 
-    // Calculate volumes and amounts
+    // Calculate volumes
     const petrolVolume1 = (petrolData.nozzle1?.end || 0) - (petrolData.nozzle1?.start || 0);
     const petrolVolume2 = (petrolData.nozzle2?.end || 0) - (petrolData.nozzle2?.start || 0);
     const dieselVolume1 = (dieselData.nozzle1?.end || 0) - (dieselData.nozzle1?.start || 0);
@@ -1439,19 +1440,19 @@ function saveToSheet() {
     // Prepare data structure
     const data = {
         data: [{
-            date: moment(date).format('YYYY-MM-DD'),
-            time: currentTime,
-            petrol_price: petrolPrice.toFixed(2),
-            diesel_price: dieselPrice.toFixed(2),
-            petrol_nozzle1_amount: (petrolData.nozzle1?.amount || 0).toFixed(2),
-            petrol_nozzle2_amount: (petrolData.nozzle2?.amount || 0).toFixed(2),
-            diesel_nozzle1_amount: (dieselData.nozzle1?.amount || 0).toFixed(2),
-            diesel_nozzle2_amount: (dieselData.nozzle2?.amount || 0).toFixed(2),
-            total_petrol_amount: (petrolData.totalAmount || 0).toFixed(2),
-            total_diesel_amount: (dieselData.totalAmount || 0).toFixed(2),
-            total_amount: ((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0)).toFixed(2),
-            petrol_volume: (petrolVolume1 + petrolVolume2).toFixed(2),
-            diesel_volume: (dieselVolume1 + dieselVolume2).toFixed(2)
+            date: formattedDate,
+            time: moment(currentTime, 'HH:mm:ss').format('HH:mm:ss'),
+            petrol_price: Number(petrolPrice).toFixed(2),
+            diesel_price: Number(dieselPrice).toFixed(2),
+            petrol_nozzle1_amount: Number(petrolData.nozzle1?.amount || 0).toFixed(2),
+            petrol_nozzle2_amount: Number(petrolData.nozzle2?.amount || 0).toFixed(2),
+            diesel_nozzle1_amount: Number(dieselData.nozzle1?.amount || 0).toFixed(2),
+            diesel_nozzle2_amount: Number(dieselData.nozzle2?.amount || 0).toFixed(2),
+            total_petrol_amount: Number(petrolData.totalAmount || 0).toFixed(2),
+            total_diesel_amount: Number(dieselData.totalAmount || 0).toFixed(2),
+            total_amount: Number((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0)).toFixed(2),
+            petrol_volume: Number(petrolVolume1 + petrolVolume2).toFixed(2),
+            diesel_volume: Number(dieselVolume1 + dieselVolume2).toFixed(2)
         }]
     };
     // Validate data
@@ -1486,7 +1487,7 @@ function saveToSheet() {
                 <div class="progress-header">
                     <div class="progress-info">
                         <p><i class="fas fa-user"></i> <strong>${userName}</strong></p>
-                        <p><i class="fas fa-calendar"></i> <strong>${date}</strong></p>
+                        <p><i class="fas fa-calendar"></i> <strong>${formattedDate}</strong></p>
                         <p><i class="fas fa-clock"></i> <strong>${currentTime}</strong></p>
                         <p><i class="fas fa-gas-pump"></i> Petrol Price: <strong>₹${petrolPrice}/L</strong></p>
                         <p><i class="fas fa-truck"></i> Diesel Price: <strong>₹${dieselPrice}/L</strong></p>
@@ -1568,32 +1569,32 @@ function saveToSheet() {
             })
             .then(response => response.json())
             .then(responseData => {
-                clearInterval(timerInterval);
-                progress = 100;
-                progressBar.style.width = '100%';
-                progressText.textContent = '100%';
-                statusText.textContent = 'Data saved successfully!';
-                steps[3].classList.add('active');
+        clearInterval(timerInterval);
+        progress = 100;
+        progressBar.style.width = '100%';
+        progressText.textContent = '100%';
+        statusText.textContent = 'Data saved successfully!';
+        steps[3].classList.add('active');
 
-                setTimeout(() => {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Saved Successfully!',
-                        html: `
-                            <div class="save-details">
-                                <p><i class="fas fa-check-circle text-success"></i> Data has been saved to sheet</p>
-                                <p><i class="fas fa-user"></i> User: <strong>${userName}</strong></p>
-                                <p><i class="fas fa-calendar"></i> Date: <strong>${date}</strong></p>
-                                <p><i class="fas fa-clock"></i> Time: <strong>${currentTime}</strong></p>
-                                <p><i class="fas fa-gas-pump"></i> Petrol: <strong>${formatCurrency(petrolData.totalAmount || 0)}</strong></p>
-                                <p><i class="fas fa-truck"></i> Diesel: <strong>${formatCurrency(dieselData.totalAmount || 0)}</strong></p>
-                                <p><i class="fas fa-rupee-sign"></i> Total: <strong>${formatCurrency((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0))}</strong></p>
-                            </div>
-                        `,
-                        confirmButtonColor: '#2ecc71'
-                    });
-                }, 500);
-            })
+        setTimeout(() => {
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved Successfully!',
+                html: `
+                    <div class="save-details">
+                        <p><i class="fas fa-check-circle text-success"></i> Data has been saved to sheet</p>
+                        <p><i class="fas fa-user"></i> User: <strong>${userName}</strong></p>
+                        <p><i class="fas fa-calendar"></i> Date: <strong>${formattedDate}</strong></p>
+                        <p><i class="fas fa-clock"></i> Time: <strong>${currentTime}</strong></p>
+                        <p><i class="fas fa-gas-pump"></i> Petrol: <strong>${formatCurrency(petrolData.totalAmount || 0)}</strong></p>
+                        <p><i class="fas fa-truck"></i> Diesel: <strong>${formatCurrency(dieselData.totalAmount || 0)}</strong></p>
+                        <p><i class="fas fa-rupee-sign"></i> Total: <strong>${formatCurrency((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0))}</strong></p>
+                    </div>
+                `,
+                confirmButtonColor: '#2ecc71'
+            });
+        }, 500);
+    })
             .catch(error => {
                 clearInterval(timerInterval);
                 console.error('Error:', error);
