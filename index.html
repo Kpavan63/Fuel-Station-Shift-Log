@@ -1390,23 +1390,42 @@ body {
         });
     }
 }
+// Add this function to format date and time properly
+function formatDateTime(date, time) {
+    // Format date as YYYY-MM-DD
+    let formattedDate = moment(date).format('YYYY-MM-DD');
+    
+    // Format time as HH:mm:ss
+    let formattedTime = moment(time, 'HH:mm:ss').format('HH:mm:ss');
+    
+    return { formattedDate, formattedTime };
+}
 // Add this function after your existing functions
 function saveToSheet() {
+    // Get date and time
+    const userName = 'KTSWamy';
     const date = document.getElementById('shiftDate').value;
     const currentTime = new Date().toLocaleTimeString('en-IN');
+    
+    // Get stored data
     const petrolData = JSON.parse(localStorage.getItem('petrolData') || '{}');
     const dieselData = JSON.parse(localStorage.getItem('dieselData') || '{}');
-    const userName = 'KTSWamy';
-
+    
     // Get fuel prices
     const petrolPrice = parseFloat(localStorage.getItem('petrolPrice')) || 0;
     const dieselPrice = parseFloat(localStorage.getItem('dieselPrice')) || 0;
 
-    // Calculate volumes
+    // Calculate volumes and amounts
     const petrolVolume1 = (petrolData.nozzle1?.end || 0) - (petrolData.nozzle1?.start || 0);
     const petrolVolume2 = (petrolData.nozzle2?.end || 0) - (petrolData.nozzle2?.start || 0);
     const dieselVolume1 = (dieselData.nozzle1?.end || 0) - (dieselData.nozzle1?.start || 0);
     const dieselVolume2 = (dieselData.nozzle2?.end || 0) - (dieselData.nozzle2?.start || 0);
+
+   
+    // Format currency without the symbol for the sheet
+    const formatCurrencyForSheet = (amount) => {
+        return parseFloat(amount || 0).toFixed(2);
+    };
 
     // Format currency
     const formatCurrency = (amount) => {
@@ -1420,22 +1439,21 @@ function saveToSheet() {
     // Prepare data structure
     const data = {
         data: [{
-            date: date,
+            date: moment(date).format('YYYY-MM-DD'),
             time: currentTime,
-            petrol_price: petrolPrice,
-            diesel_price: dieselPrice,
-            petrol_nozzle1_amount: formatCurrency(petrolData.nozzle1?.amount || 0),
-            petrol_nozzle2_amount: formatCurrency(petrolData.nozzle2?.amount || 0),
-            diesel_nozzle1_amount: formatCurrency(dieselData.nozzle1?.amount || 0),
-            diesel_nozzle2_amount: formatCurrency(dieselData.nozzle2?.amount || 0),
-            total_petrol_amount: formatCurrency(petrolData.totalAmount || 0),
-            total_diesel_amount: formatCurrency(dieselData.totalAmount || 0),
-            total_amount: formatCurrency((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0)),
-            petrol_volume: petrolVolume1 + petrolVolume2,
-            diesel_volume: dieselVolume1 + dieselVolume2
+            petrol_price: petrolPrice.toFixed(2),
+            diesel_price: dieselPrice.toFixed(2),
+            petrol_nozzle1_amount: (petrolData.nozzle1?.amount || 0).toFixed(2),
+            petrol_nozzle2_amount: (petrolData.nozzle2?.amount || 0).toFixed(2),
+            diesel_nozzle1_amount: (dieselData.nozzle1?.amount || 0).toFixed(2),
+            diesel_nozzle2_amount: (dieselData.nozzle2?.amount || 0).toFixed(2),
+            total_petrol_amount: (petrolData.totalAmount || 0).toFixed(2),
+            total_diesel_amount: (dieselData.totalAmount || 0).toFixed(2),
+            total_amount: ((petrolData.totalAmount || 0) + (dieselData.totalAmount || 0)).toFixed(2),
+            petrol_volume: (petrolVolume1 + petrolVolume2).toFixed(2),
+            diesel_volume: (dieselVolume1 + dieselVolume2).toFixed(2)
         }]
     };
-
     // Validate data
     if (petrolPrice <= 0 || dieselPrice <= 0) {
         Swal.fire({
